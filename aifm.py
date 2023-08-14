@@ -15,13 +15,14 @@ if __name__ == '__main__':
                                      prog=md.prog,
                                      epilog=md.epilog)
     # 添加命令行参数
-    parser.add_argument('-l', '--list', action='store_true', required=False, help='列出当前进行中的所有基金项目')
+    parser.add_argument('-l', '--list', action='store_true', required=False, help='列出当前进行中的所有基金项目(简略)')
+    parser.add_argument('-ll', '--list_detail', action='store_true', required=False, help='列出当前进行中的所有基金项目(详细信息)')
     parser.add_argument('-c', '--clear', action='store_true', required=False, help='清除所有基金项目')
     parser.add_argument('-b', '--build', action='store_true', required=False, help='创建新的基金项目')
-    parser.add_argument('-ia', '--add_incubate', action='store_true', required=False, help='添加新的孵化中项目的预期奖励')
-    parser.add_argument('-il', '--list_incubate', action='store_true', required=False, help='列出孵化中项目的预期奖励')
     parser.add_argument('-d', '--delete', action='store_true', required=False, help='删除指定基金项目')
     parser.add_argument('-u', '--update', action='store_true', required=False, help='更新指定基金项目的进度状态')
+    parser.add_argument('-ia', '--add_incubate', action='store_true', required=False, help='添加新的孵化中项目的预期奖励')
+    parser.add_argument('-il', '--list_incubate', action='store_true', required=False, help='列出孵化中项目的预期奖励')
     print('\n欢迎使用“成就激励基金”管理器. 使用参数[-h]来查看帮助信息.')
     # 从命令行中解析参数
     args = parser.parse_args()
@@ -39,6 +40,9 @@ if __name__ == '__main__':
 
     if args.list is True:
         operation.list_all_projects()
+
+    if args.list_detail is True:
+        operation.list_all_projects_detail()
 
     if args.build is True:
         project_type_id = eval(input('\n请选择要创建的基金项目类型:\n 1.自定义基金项目\n 2.游戏时长基金项目(示例项目类型)\n'))
@@ -66,7 +70,6 @@ if __name__ == '__main__':
             op = input('确认要删除该基金项目吗? [Y/N]: ')
             if (op == 'Y') or (op == 'y'):
                 operation.delete_project(del_id)
-                print('> 项目已删除!')
                 operation.list_all_projects()
                 break
             elif (op == 'N') or (op == 'n'):

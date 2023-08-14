@@ -13,9 +13,13 @@ from utils import SAVE_DIR, PROJECTS_PICKLE_FILENAME, INCUBATE_PICKLE_FILENAME
 class ManagerInitializer:
     prog = 'aifm.py'  # 程序名
     # usage = ''  # 程序使用方式
-    description = '“AIFM(Achievement Inventive Fund ' \
-                  'Manager, 成就激励基金管理器)”是一个基金项目管理和跟踪工具. ' \
-                  '用户通过记录并达成一定目标和成就, 以触发自己设定的奖励.'  # 程序帮助文档
+    description = """
+    “AIFM(Achievement Inventive Fund Manager, 成就激励基金管理器)”是一个基金项目管理和跟踪工具.\n
+    用户可以创建独特的基金项目. 对每个项目, 用户可以自行决定达成目标后的奖励, 自由设定达成目标所需的工作量和奖励的多少, 并设置相应的计数单位.\n
+    例如, 用户可以创建这样的一个基金项目: “我每学习100小时, 就可以为购买游戏储值50元.”\n在这个项目中, 
+    达成目标所需的工作量为100, 其单位为小时; 奖励的数值为50, 其单位为元.\n
+    同时, 用户可以对创建的每个基金项目进行跟踪, 包括查看, 更新以及删除指定的项目.\n
+    需要注意的是, AIFM的工作仍依赖于用户自身的自觉性, 其存在意义只是为用户增加成就感并给予鼓励."""
     epilog = f'本地存档保存在{SAVE_DIR}目录下的{PROJECTS_PICKLE_FILENAME}文件中.'  # 程序额外说明
 
     def __init__(self):

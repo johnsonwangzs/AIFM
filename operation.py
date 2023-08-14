@@ -56,6 +56,30 @@ def list_all_projects():
     for (project_id, project_object) in enumerate(projects_list):  # 列出所有项目
         project_type = project_object.project_type
         project_name = project_object.project_name
+        unit_target = project_object.unit_target
+        unit_award = project_object.unit_award
+        value_target = project_object.value_target
+        value_award = project_object.value_award
+        cur_stat = project_object.cur_stat
+        s1 = f'{value_target}({unit_target}) => {value_award}({unit_award})'
+        s2 = f'{cur_stat}/{value_target}'
+        table_output.append([project_id + 1, project_name, project_type,
+                             s1, s2])
+    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度']
+    print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
+
+
+def list_all_projects_detail():
+    """列出所有基金项目(详细信息)."""
+    projects_list = _read_savefile_projects()
+    if len(projects_list) == 0:
+        print('\n暂无基金项目.\n提示: 使用参数[-b]来添加一个新的基金项目.')
+        return
+    print(f'\n目前共有{len(projects_list)}个基金项目:')
+    table_output = list()
+    for (project_id, project_object) in enumerate(projects_list):  # 列出所有项目
+        project_type = project_object.project_type
+        project_name = project_object.project_name
         description = project_object.description
         unit_target = project_object.unit_target
         unit_award = project_object.unit_award
@@ -110,6 +134,7 @@ def delete_project(project_id: int):
     global projects_filepath
     with open(projects_filepath, 'wb') as f:
         pickle.dump(project_list, f)
+    print('> 项目已删除!')
 
 
 def update_project_stat(project_id: int, value_add: float = 0.0):
