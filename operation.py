@@ -18,6 +18,7 @@ def clear_all_projects():
     """清除所有项目(删除项目存档文件)."""
     global projects_filepath
     os.remove(projects_filepath)
+    print('> 已清除所有基金项目.')
 
 
 def _read_savefile_projects() -> list:
@@ -61,11 +62,12 @@ def list_all_projects():
         value_target = project_object.value_target
         value_award = project_object.value_award
         cur_stat = project_object.cur_stat
+        complete_cnt = project_object.complete_cnt
         s1 = f'{value_target}({unit_target}) => {value_award}({unit_award})'
         s2 = f'{cur_stat}/{value_target}'
         table_output.append([project_id + 1, project_name, project_type,
-                             s1, s2, description])
-    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度', '项目描述']
+                             s1, s2, complete_cnt, description])
+    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度', '累计完成轮数', '项目描述']
     print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
 
 
@@ -92,6 +94,7 @@ def build_new_project(project_type: str, project_name: str, **kwargs):
     global projects_filepath
     with open(projects_filepath, 'wb') as f:
         pickle.dump(projects_list, f)
+    print('> 新基金项目创建完毕, 已保存至本地.')
 
 
 def delete_project(project_id: int):
@@ -109,6 +112,31 @@ def delete_project(project_id: int):
         pickle.dump(project_list, f)
 
 
+def update_project_stat(project_id: int, value_add: float = 0.0):
+    """更新指定基金项目的进度状态.
+
+    :param project_id: 项目id.
+    :param value_add: 状态的新增值.
+    """
+    project_list = _read_savefile_projects()
+    try:
+        cur_stat = project_list[project_id - 1].cur_stat
+        cur_stat += value_add
+        # 检查是否达到目标
+        value_target = project_list[project_id - 1].value_target
+        while cur_stat >= value_target:
+            cur_stat -= value_target
+            project_list[project_id - 1].complete_cnt += 1
+        project_list[project_id - 1].cur_stat = cur_stat
+    except IndexError:
+        print('\n错误! 输入的项目序号不存在.')
+
+    global projects_filepath
+    with open(projects_filepath, 'wb') as f:
+        pickle.dump(project_list, f)
+    print('> 项目进度状态已变更.')
+
+
 def add_incubate_award(award: str, description: str, necessity_level: int):
     """添加新的孵化中项目的预期奖励.
 
@@ -124,6 +152,7 @@ def add_incubate_award(award: str, description: str, necessity_level: int):
     global incubate_filepath
     with open(incubate_filepath, 'wb') as f:
         pickle.dump(incubate_list, f)
+    print('> 预期奖励已录入.')
 
 
 def list_incubate_award():

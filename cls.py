@@ -54,8 +54,8 @@ class SelfDefinedFundProject(FundProject):
 
     def __init__(self, project_name: str,
                  unit_target: str, unit_award: str,
-                 value_target: int, value_award: int,
-                 cur_stat: int = 0):
+                 value_target: float, value_award: float,
+                 cur_stat: float = 0.0):
         """基金项目初始化.
 
         :param project_name: 基金项目名称.
@@ -72,6 +72,7 @@ class SelfDefinedFundProject(FundProject):
         self.value_target = value_target
         self.value_award = value_award
         self.cur_stat = cur_stat
+        self.complete_cnt = 0
 
 
 class TypicalGameHourFundProject(FundProject):
@@ -82,8 +83,8 @@ class TypicalGameHourFundProject(FundProject):
 
     def __init__(self, project_name: str,
                  unit_target: str = '小时', unit_award: str = '小时',
-                 value_target: int = 10, value_award: int = 1,
-                 cur_stat: int = 0):
+                 value_target: float = 10.0, value_award: float = 1.0,
+                 cur_stat: float = 0.0):
         """初始化"游戏时长基金项目"(示例项目类型).
 
         :param project_name: 基金项目名称.
@@ -100,6 +101,7 @@ class TypicalGameHourFundProject(FundProject):
         self.value_target = value_target
         self.value_award = value_award
         self.cur_stat = cur_stat
+        self.complete_cnt = 0
 
 
 class IncubateAward:

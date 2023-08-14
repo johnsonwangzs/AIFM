@@ -21,6 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('-ia', '--add_incubate', action='store_true', required=False, help='添加新的孵化中项目的预期奖励')
     parser.add_argument('-il', '--list_incubate', action='store_true', required=False, help='列出孵化中项目的预期奖励')
     parser.add_argument('-d', '--delete', action='store_true', required=False, help='删除指定基金项目')
+    parser.add_argument('-u', '--update', action='store_true', required=False, help='更新指定基金项目的进度状态')
     print('\n欢迎使用“成就激励基金”管理器. 使用参数[-h]来查看帮助信息.')
     # 从命令行中解析参数
     args = parser.parse_args()
@@ -31,7 +32,6 @@ if __name__ == '__main__':
             op = input('\n确认要清除所有基金项目吗? [Y/N]: ')
             if (op == 'Y') or (op == 'y'):
                 operation.clear_all_projects()
-                print('> 已清除所有基金项目.')
                 break
             elif (op == 'N') or (op == 'n'):
                 print('无操作.')
@@ -45,7 +45,6 @@ if __name__ == '__main__':
         if project_type_id == 2:
             project_name = input('请输入基金项目名称: ')
             operation.build_new_project('游戏时长基金项目', project_name)
-            print('> 新基金项目创建完毕, 已保存至本地.')
         elif project_type_id == 1:
             project_name = input('请输入基金项目名称: ')
             project_info = dict()
@@ -53,11 +52,10 @@ if __name__ == '__main__':
             project_info['award'] = input('请输入最终奖励: ')
             project_info['unit_target'] = input('请输入投入目标的计量单位: ')
             project_info['unit_award'] = input('请输入最终奖励的计量单位: ')
-            project_info['value_target'] = input('请输入投入目标的数值: ')
-            project_info['value_award'] = input('请输入最终奖励的数值: ')
-            project_info['cur_stat'] = eval(input('请输入当前状态: '))
+            project_info['value_target'] = float(eval(input('请输入投入目标的数值: ')))
+            project_info['value_award'] = float(eval(input('请输入最终奖励的数值: ')))
+            project_info['cur_stat'] = float(eval(input('请输入当前状态: ')))
             operation.build_new_project('自定义基金项目', project_name, **project_info)
-            print('> 新基金项目创建完毕, 已保存至本地.')
         else:
             print('非法输入.')
 
@@ -80,7 +78,13 @@ if __name__ == '__main__':
         description = input('请输入奖励描述: ')
         necessity_level = eval(input('请输入需求性等级. 取值{1,2,3,4,5}(由低至高): '))
         operation.add_incubate_award(award, description, necessity_level)
-        print('> 预期奖励已录入.')
 
     if args.list_incubate is True:
         operation.list_incubate_award()
+
+    if args.update is True:
+        operation.list_all_projects()
+        update_id = eval(input('\n请输入要更新的项目id: '))
+        value_add = eval(input('请输入项目进度状态的新增数值: '))
+        operation.update_project_stat(update_id, value_add)
+        operation.list_all_projects()
