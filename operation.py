@@ -55,8 +55,17 @@ def list_all_projects():
     for (project_id, project_object) in enumerate(projects_list):  # 列出所有项目
         project_type = project_object.project_type
         project_name = project_object.project_name
-        table_output.append([project_id + 1, project_name, project_type])
-    headers = ['项目id', '项目名称', '项目类型']
+        description = project_object.description
+        unit_target = project_object.unit_target
+        unit_award = project_object.unit_award
+        value_target = project_object.value_target
+        value_award = project_object.value_award
+        cur_stat = project_object.cur_stat
+        s1 = f'{value_target}({unit_target}) => {value_award}({unit_award})'
+        s2 = f'{cur_stat}/{value_target}'
+        table_output.append([project_id + 1, project_name, project_type,
+                             s1, s2, description])
+    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度', '项目描述']
     print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
 
 
@@ -67,7 +76,7 @@ def build_new_project(project_type: str, project_name: str, **kwargs):
     :param project_name: 基金项目名称.
     :param kwargs: 自定义项目类型时, 其他的构造属性.
     """
-    if project_type == '游戏时长基金项目(示例项目类型)':
+    if project_type == '游戏时长基金项目':
         new_project = TypicalGameHourFundProject(project_name=project_name)
     else:
         new_project = SelfDefinedFundProject(project_name=project_name,

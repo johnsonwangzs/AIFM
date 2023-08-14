@@ -44,7 +44,7 @@ if __name__ == '__main__':
         project_type_id = eval(input('\n请选择要创建的基金项目类型:\n 1.自定义基金项目\n 2.游戏时长基金项目(示例项目类型)\n'))
         if project_type_id == 2:
             project_name = input('请输入基金项目名称: ')
-            operation.build_new_project('游戏时长基金项目(示例项目类型)', project_name)
+            operation.build_new_project('游戏时长基金项目', project_name)
             print('> 新基金项目创建完毕, 已保存至本地.')
         elif project_type_id == 1:
             project_name = input('请输入基金项目名称: ')

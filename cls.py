@@ -63,7 +63,7 @@ class SelfDefinedFundProject(FundProject):
         :param unit_award: 计量单位(获取奖励).
         :param value_target: 数值(投入目标).
         :param value_award: 数值(获取奖励).
-        :param cur_stat: 当前状态. 即项目创建时已经累积的时长.
+        :param cur_stat: 当前状态. 即项目创建时已经累积的单位.
         """
         super().__init__()
         self.project_name = project_name
@@ -76,7 +76,7 @@ class SelfDefinedFundProject(FundProject):
 
 class TypicalGameHourFundProject(FundProject):
     """游戏时长基金项目(示例项目类型)"""
-    project_type = '游戏时长基金项目(示例项目类型)'
+    project_type = '游戏时长基金项目'
     award = '游戏时长'
     description = '我每学习达到指定时长, 就能获得一定的游戏时间.'
 
