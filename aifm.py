@@ -27,6 +27,10 @@ if __name__ == '__main__':
     parser.add_argument('-id', '--delete_incubate', action='store_true', required=False, help='删除指定孵化中项目的预期奖励')
     parser.add_argument('-ic', '--clear_incubate', action='store_true', required=False, help='清除所有孵化中项目的预期奖励')
     parser.add_argument('-rl', '--list_award_repo', action='store_true', required=False, help='列出奖励仓库')
+    parser.add_argument('-rw', '--withdraw_repo', action='store_true', required=False, help='从奖励仓库中取出指定数量的奖励')
+    parser.add_argument('-rd', '--delete_repo', action='store_true', required=False, help='删除指定的奖励仓库')
+    parser.add_argument('-rc', '--clear_repo', action='store_true', required=False, help='清除所有奖励仓库')
+    parser.add_argument('-cc', '--clear_all', action='store_true', required=False, help='清除所有存档和存储文件(完全初始化)')
     print('\n欢迎使用“成就激励基金”管理器. 使用参数[-h]来查看帮助信息.')
     # 从命令行中解析参数
     args = parser.parse_args()
@@ -88,7 +92,7 @@ if __name__ == '__main__':
             value_add = eval(input('请输入项目进度状态的新增数值: '))
             flag_repo_change = operation.update_project_stat(update_id, value_add)
             operation.list_all_projects()
-            if flag_repo_change is True:
+            if flag_repo_change:
                 operation.list_award_repo()
 
     if args.model is True:
@@ -118,7 +122,57 @@ if __name__ == '__main__':
                 break
 
     if args.clear_incubate is True:
-        operation.clear_all_incubate_awards()
+        while True:
+            op = input('\n确认要清除所有孵化中项目的预期奖励吗? [Y/N]: ')
+            if (op == 'Y') or (op == 'y'):
+                operation.clear_all_incubate_awards()
+                break
+            elif (op == 'N') or (op == 'n'):
+                print('无操作.')
+                break
 
     if args.list_award_repo is True:
         operation.list_award_repo()
+
+    if args.withdraw_repo is True:
+        operation.list_award_repo()
+        repo_id = eval(input('\n请输入取出奖励的仓库id: '))
+        value_withdraw = eval(input('请输入取出奖励的数值: '))
+        flag_success_withdraw = operation.withdraw_award_in_repo(repo_id, value_withdraw)
+        if flag_success_withdraw:
+            operation.list_award_repo()
+
+    if args.delete_repo is True:
+        operation.list_award_repo()
+        del_id = eval(input('\n请输入要删除的奖励仓库id: '))
+        while True:
+            op = input('确认要删除该奖励仓库吗? [Y/N]: ')
+            if (op == 'Y') or (op == 'y'):
+                operation.delete_award_repo(del_id)
+                operation.list_award_repo()
+                break
+            elif (op == 'N') or (op == 'n'):
+                print('无操作.')
+                break
+
+    if args.clear_repo is True:
+        while True:
+            op = input('确认要清空所有奖励仓库吗? [Y/N]: ')
+            if (op == 'Y') or (op == 'y'):
+                operation.clear_all_award_repo()
+                break
+            elif (op == 'N') or (op == 'n'):
+                print('无操作.')
+                break
+
+    if args.clear_all is True:
+        while True:
+            op = input('确认要清除所有存档和存储文件吗? [Y/N]: ')
+            if (op == 'Y') or (op == 'y'):
+                operation.clear_all_projects()
+                operation.clear_all_incubate_awards()
+                operation.clear_all_award_repo()
+                break
+            elif (op == 'N') or (op == 'n'):
+                print('无操作.')
+                break
