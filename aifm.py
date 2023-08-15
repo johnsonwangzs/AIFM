@@ -26,6 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('-il', '--list_incubate', action='store_true', required=False, help='列出孵化中项目的预期奖励')
     parser.add_argument('-id', '--delete_incubate', action='store_true', required=False, help='删除指定孵化中项目的预期奖励')
     parser.add_argument('-ic', '--clear_incubate', action='store_true', required=False, help='清除所有孵化中项目的预期奖励')
+    parser.add_argument('-rl', '--list_award_repo', action='store_true', required=False, help='列出奖励仓库')
     print('\n欢迎使用“成就激励基金”管理器. 使用参数[-h]来查看帮助信息.')
     # 从命令行中解析参数
     args = parser.parse_args()
@@ -85,8 +86,10 @@ if __name__ == '__main__':
         if projects_cnt != 0:
             update_id = eval(input('\n请输入要更新的项目id: '))
             value_add = eval(input('请输入项目进度状态的新增数值: '))
-            operation.update_project_stat(update_id, value_add)
+            flag_repo_change = operation.update_project_stat(update_id, value_add)
             operation.list_all_projects()
+            if flag_repo_change is True:
+                operation.list_award_repo()
 
     if args.model is True:
         operation.list_all_project_models()
@@ -116,3 +119,6 @@ if __name__ == '__main__':
 
     if args.clear_incubate is True:
         operation.clear_all_incubate_awards()
+
+    if args.list_award_repo is True:
+        operation.list_award_repo()

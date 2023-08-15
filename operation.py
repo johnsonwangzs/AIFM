@@ -5,13 +5,14 @@
 # @function:
 from datetime import datetime
 import os.path
-from utils import SAVE_DIR, PROJECTS_PICKLE_FILENAME, INCUBATE_PICKLE_FILENAME
-from cls import TypicalGameHourFundProject, SelfDefinedFundProject, IncubateAward
+from utils import SAVE_DIR, PROJECTS_PICKLE_FILENAME, INCUBATE_PICKLE_FILENAME, AWARD_REPO_PICKLE_FILENAME
+from cls import TypicalGameHourFundProject, SelfDefinedFundProject, IncubateAward, AwardRepository
 import pickle
 from tabulate import tabulate
 
 projects_filepath = os.path.join(SAVE_DIR, PROJECTS_PICKLE_FILENAME)
-incubate_filepath = os.path.join(SAVE_DIR, INCUBATE_PICKLE_FILENAME)
+award_incubate_filepath = os.path.join(SAVE_DIR, INCUBATE_PICKLE_FILENAME)
+award_repo_filepath = os.path.join(SAVE_DIR, AWARD_REPO_PICKLE_FILENAME)
 
 
 def clear_all_projects():
@@ -25,7 +26,7 @@ def _read_savefile_projects() -> list:
     """读取存档文件, 返回基金项目列表."""
     global projects_filepath
     with open(projects_filepath, 'rb') as f:
-        projects_list = []
+        projects_list = list()
         try:
             projects_list = pickle.load(f)
         except EOFError:
@@ -35,14 +36,26 @@ def _read_savefile_projects() -> list:
 
 def _read_savefile_incubate() -> list:
     """读取存储文件, 返回孵化中项目的预期奖励列表."""
-    global incubate_filepath
-    with open(incubate_filepath, 'rb') as f:
-        incubate_list = []
+    global award_incubate_filepath
+    with open(award_incubate_filepath, 'rb') as f:
+        incubate_list = list()
         try:
             incubate_list = pickle.load(f)
         except EOFError:
-            print(f'\n错误! 存储文件为空, 请手动删除存储文件{incubate_filepath}后再试.')
+            print(f'\n错误! 存储文件为空, 请手动删除存储文件{award_incubate_filepath}后再试.')
     return incubate_list
+
+
+def _read_savefile_repo() -> list:
+    """读取存储文件, 返回奖励仓库列表."""
+    global award_repo_filepath
+    with open(award_repo_filepath, 'rb') as f:
+        repo_list = list()
+        try:
+            repo_list = pickle.load(f)
+        except EOFError:
+            print(f'\n错误! 存储文件为空, 请手动删除存储文件{award_repo_filepath}后再试.')
+    return repo_list
 
 
 def list_all_projects() -> int:
@@ -61,11 +74,12 @@ def list_all_projects() -> int:
         value_target = project_object.value_target
         value_award = project_object.value_award
         cur_stat = project_object.cur_stat
+        complete_cnt = project_object.complete_cnt
         s1 = f'{value_target}({unit_target}) => {value_award}({unit_award})'
         s2 = f'{cur_stat}/{value_target}'
         table_output.append([project_id + 1, project_name, project_type,
-                             s1, s2])
-    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度']
+                             s1, s2, complete_cnt])
+    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度', '累计完成轮数']
     print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
     return len(projects_list)
 
@@ -140,7 +154,7 @@ def delete_project(project_id: int):
         print('\n错误! 输入的项目序号不存在.')
 
 
-def update_project_stat(project_id: int, value_add: float = 0.0):
+def update_project_stat(project_id: int, value_add: float = 0.0) -> bool:
     """更新指定基金项目的进度状态.
 
     :param project_id: 项目id.
@@ -150,19 +164,73 @@ def update_project_stat(project_id: int, value_add: float = 0.0):
     try:
         cur_stat = project_list[project_id - 1].cur_stat
         cur_stat += value_add
+
         # 检查是否达到目标
         value_target = project_list[project_id - 1].value_target
+        value_award_add = 0.0
         while cur_stat >= value_target:
             cur_stat -= value_target
             project_list[project_id - 1].complete_cnt += 1
+            value_award_add += project_list[project_id - 1].value_award
         project_list[project_id - 1].cur_stat = cur_stat
-        project_list[project_id - 1].last_update_time = str(datetime.now())
+        time_now = str(datetime.now())
+        project_list[project_id - 1].last_update_time = time_now
+        award = project_list[project_id - 1].award
+        flag_repo_change = update_award_repo(award, value_award_add, project_list[project_id - 1].unit_award, time_now)  # 更新奖励仓库
+
         global projects_filepath
         with open(projects_filepath, 'wb') as f:
             pickle.dump(project_list, f)
         print('> 项目进度状态已变更.')
-    except IndexError:
+
+        if flag_repo_change is True:
+            return True
+
+    except (IndexError, TypeError):
         print('\n错误! 输入的项目序号不存在.')
+
+    return False
+
+
+def update_award_repo(award: str, value_award_add: float, unit_award: str, time_now: str) -> bool:
+    """更新奖励仓库.
+
+    :param award: 奖励名称.
+    :param value_award_add: 奖励数值.
+    :param unit_award: 奖励的单位.
+    :param time_now: 仓库发生变动的时间.
+    """
+    if value_award_add == 0.0:  # 若数值为0, 则不用更新
+        return False
+
+    repo_list = _read_savefile_repo()
+
+    if len(repo_list) != 0:
+        for repo in repo_list:  # 依次遍历列表中的每个仓库, 查找是否有同类奖励的
+            if repo.award == award:
+                repo.value_award += value_award_add
+                repo.last_change_time = time_now
+                break
+    else:   # 检查存储文件为空(不存在仓库), 或者不存在同类奖励仓库
+        new_repo = _create_award_repo(award, unit_award)
+        new_repo.value_award += value_award_add
+        new_repo.last_change_time = time_now
+        repo_list.append(new_repo)
+
+    with open(award_repo_filepath, 'wb') as f:
+        pickle.dump(repo_list, f)
+        print('> 已更新奖励仓库.')
+    return True
+
+def _create_award_repo(award: str, unit_award: str) -> AwardRepository:
+    """创建新的奖励仓库.
+
+    :param award: 奖励名称.
+    :param unit_award: 奖励的单位.
+    """
+    new_repo = AwardRepository(award, 0.0, unit_award)
+    print('> 已创建新奖励仓库.')
+    return new_repo
 
 
 def list_all_project_models():
@@ -178,14 +246,13 @@ def add_incubate_award(award: str, description: str, necessity_level: int):
     :param award: 奖励名称.
     :param description: 奖励描述.
     :param necessity_level: 需求性等级. 取值:{1,2,3,4,5}(由低至高)
-    :return:
     """
     ia = IncubateAward(award, description, necessity_level)
     incubate_list = _read_savefile_incubate()
     incubate_list.append(ia)
 
-    global incubate_filepath
-    with open(incubate_filepath, 'wb') as f:
+    global award_incubate_filepath
+    with open(award_incubate_filepath, 'wb') as f:
         pickle.dump(incubate_list, f)
     print('> 预期奖励已录入.')
 
@@ -198,10 +265,10 @@ def list_incubate_award():
         return
     print(f'\n目前共有{len(incubate_list)}个预期奖励:')
     table_output = list()
-    for (incubate_id, incubate_project) in enumerate(incubate_list):
-        award = incubate_project.award
-        description = incubate_project.description
-        necessity_level = incubate_project.necessity_level
+    for (incubate_id, incubate_object) in enumerate(incubate_list):
+        award = incubate_object.award
+        description = incubate_object.description
+        necessity_level = incubate_object.necessity_level
         table_output.append([incubate_id + 1, award, description, necessity_level])
     headers = ['奖励id', '奖励名称', '描述', '需求性等级']
     print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
@@ -211,13 +278,12 @@ def delete_incubate_award(award_id: int):
     """删除指定孵化中项目的预期奖励.
 
     :param award_id: 预期奖励的id
-    :return:
     """
     incubate_list = _read_savefile_incubate()
     try:
         del incubate_list[award_id - 1]
-        global incubate_filepath
-        with open(incubate_filepath, 'wb') as f:
+        global award_incubate_filepath
+        with open(award_incubate_filepath, 'wb') as f:
             pickle.dump(incubate_list, f)
         print('> 预期奖励已删除!')
     except IndexError:
@@ -226,6 +292,23 @@ def delete_incubate_award(award_id: int):
 
 def clear_all_incubate_awards():
     """删除所有孵化中项目的预期奖励."""
-    global incubate_filepath
-    os.remove(incubate_filepath)
+    global award_incubate_filepath
+    os.remove(award_incubate_filepath)
     print('> 已清除所有孵化中项目的预期奖励.')
+
+
+def list_award_repo():
+    repo_list = _read_savefile_repo()
+    if len(repo_list) == 0:
+        print('\n暂无已获得奖励.')
+        return
+    print(f'\n目前共有{len(repo_list)}个奖励仓库:')
+    table_output = list()
+    for (repo_id, repo_object) in enumerate(repo_list):
+        award = repo_object.award
+        value_award = repo_object.value_award
+        unit_award = repo_object.unit_award
+        last_change_time = repo_object.last_change_time
+        table_output.append([repo_id + 1, award, value_award, unit_award, last_change_time])
+    headers = ['奖励id', '奖励名称', '当前仓库存量', '计量单位', '最近变动时间']
+    print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))

@@ -7,7 +7,7 @@
 import os.path
 import pickle
 
-from utils import SAVE_DIR, PROJECTS_PICKLE_FILENAME, INCUBATE_PICKLE_FILENAME
+from utils import SAVE_DIR, PROJECTS_PICKLE_FILENAME, INCUBATE_PICKLE_FILENAME, AWARD_REPO_PICKLE_FILENAME
 
 
 class ManagerInitializer:
@@ -27,15 +27,20 @@ class ManagerInitializer:
 
     def _check_savefile(self):
         projects_filepath = os.path.join(SAVE_DIR, PROJECTS_PICKLE_FILENAME)
-        incubate_filepath = os.path.join(SAVE_DIR, INCUBATE_PICKLE_FILENAME)
+        award_incubate_filepath = os.path.join(SAVE_DIR, INCUBATE_PICKLE_FILENAME)
+        award_repo_filepath = os.path.join(SAVE_DIR, AWARD_REPO_PICKLE_FILENAME)
         if not os.path.exists(projects_filepath):  # 未找到存档文件, 则创建新的空白存档文件
             with open(projects_filepath, 'wb') as f:
                 pickle.dump(list(), f)
             print(f'> 已创建空白项目存档文件: {projects_filepath}')
-        if not os.path.exists(incubate_filepath):
-            with open(incubate_filepath, 'wb') as f:
+        if not os.path.exists(award_incubate_filepath):
+            with open(award_incubate_filepath, 'wb') as f:
                 pickle.dump(list(), f)
-            print(f'> 已创建空白奖励存储文件: {incubate_filepath}')
+            print(f'> 已创建空白预期奖励存储文件: {award_incubate_filepath}')
+        if not os.path.exists(award_repo_filepath):
+            with open(award_repo_filepath, 'wb') as f:
+                pickle.dump(list(), f)
+            print(f'> 已创建空白奖励仓库存储文件: {award_repo_filepath}')
 
 
 class FundProject:
@@ -128,3 +133,19 @@ class IncubateAward:
         self.award = award
         self.description = description
         self.necessity_level = necessity_level
+        # TODO: add more attributes
+
+
+class AwardRepository:
+    """奖励存储库"""
+    def __init__(self, award: str, value_award: float, unit_award: str):
+        """初始化一种奖励的存储库.
+
+        :param award: 奖励名称.
+        :param value_award: 奖励在当前仓库存存量.
+        :param unit_award: 奖励的单位.
+        """
+        self.award = award
+        self.value_award = value_award
+        self.unit_award = unit_award
+        self.last_change_time = ''  # 最近变动时间
