@@ -3,7 +3,7 @@
 # @time    : 2023-08-13
 # @file    : operation.py
 # @function:
-
+from datetime import datetime
 import os.path
 from utils import SAVE_DIR, PROJECTS_PICKLE_FILENAME, INCUBATE_PICKLE_FILENAME
 from cls import TypicalGameHourFundProject, SelfDefinedFundProject, IncubateAward
@@ -45,12 +45,12 @@ def _read_savefile_incubate() -> list:
     return incubate_list
 
 
-def list_all_projects():
+def list_all_projects() -> int:
     """列出所有基金项目."""
     projects_list = _read_savefile_projects()
     if len(projects_list) == 0:
         print('\n暂无基金项目.\n提示: 使用参数[-b]来添加一个新的基金项目.')
-        return
+        return len(projects_list)
     print(f'\n目前共有{len(projects_list)}个基金项目:')
     table_output = list()
     for (project_id, project_object) in enumerate(projects_list):  # 列出所有项目
@@ -67,14 +67,15 @@ def list_all_projects():
                              s1, s2])
     headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度']
     print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
+    return len(projects_list)
 
 
-def list_all_projects_detail():
+def list_all_projects_detail() -> int:
     """列出所有基金项目(详细信息)."""
     projects_list = _read_savefile_projects()
     if len(projects_list) == 0:
         print('\n暂无基金项目.\n提示: 使用参数[-b]来添加一个新的基金项目.')
-        return
+        return len(projects_list)
     print(f'\n目前共有{len(projects_list)}个基金项目:')
     table_output = list()
     for (project_id, project_object) in enumerate(projects_list):  # 列出所有项目
@@ -89,10 +90,12 @@ def list_all_projects_detail():
         complete_cnt = project_object.complete_cnt
         s1 = f'{value_target}({unit_target}) => {value_award}({unit_award})'
         s2 = f'{cur_stat}/{value_target}'
+        last_update = project_object.last_update_time
         table_output.append([project_id + 1, project_name, project_type,
-                             s1, s2, complete_cnt, description])
-    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度', '累计完成轮数', '项目描述']
+                             s1, s2, complete_cnt, last_update, description])
+    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度', '累计完成轮数', '最近修改进度时间', '项目描述']
     print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
+    return len(projects_list)
 
 
 def build_new_project(project_type: str, project_name: str, **kwargs):
@@ -129,12 +132,12 @@ def delete_project(project_id: int):
     project_list = _read_savefile_projects()
     try:
         del project_list[project_id - 1]
+        global projects_filepath
+        with open(projects_filepath, 'wb') as f:
+            pickle.dump(project_list, f)
+        print('> 项目已删除!')
     except IndexError:
         print('\n错误! 输入的项目序号不存在.')
-    global projects_filepath
-    with open(projects_filepath, 'wb') as f:
-        pickle.dump(project_list, f)
-    print('> 项目已删除!')
 
 
 def update_project_stat(project_id: int, value_add: float = 0.0):
@@ -153,13 +156,20 @@ def update_project_stat(project_id: int, value_add: float = 0.0):
             cur_stat -= value_target
             project_list[project_id - 1].complete_cnt += 1
         project_list[project_id - 1].cur_stat = cur_stat
+        project_list[project_id - 1].last_update_time = str(datetime.now())
+        global projects_filepath
+        with open(projects_filepath, 'wb') as f:
+            pickle.dump(project_list, f)
+        print('> 项目进度状态已变更.')
     except IndexError:
         print('\n错误! 输入的项目序号不存在.')
 
-    global projects_filepath
-    with open(projects_filepath, 'wb') as f:
-        pickle.dump(project_list, f)
-    print('> 项目进度状态已变更.')
+
+def list_all_project_models():
+    """展示内置基金项目类型属性信息."""
+    # TypicalGameHourFundProject Class
+    tghfp = TypicalGameHourFundProject('示例项目')
+    TypicalGameHourFundProject.show_model_class(tghfp)
 
 
 def add_incubate_award(award: str, description: str, necessity_level: int):

@@ -21,12 +21,13 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--build', action='store_true', required=False, help='创建新的基金项目')
     parser.add_argument('-d', '--delete', action='store_true', required=False, help='删除指定基金项目')
     parser.add_argument('-u', '--update', action='store_true', required=False, help='更新指定基金项目的进度状态')
+    parser.add_argument('-m', '--model', action='store_true', required=False, help='查看内置基金项目类型属性信息')
     parser.add_argument('-ia', '--add_incubate', action='store_true', required=False, help='添加新的孵化中项目的预期奖励')
     parser.add_argument('-il', '--list_incubate', action='store_true', required=False, help='列出孵化中项目的预期奖励')
     print('\n欢迎使用“成就激励基金”管理器. 使用参数[-h]来查看帮助信息.')
     # 从命令行中解析参数
     args = parser.parse_args()
-    print(f'{args = }')
+    # print(f'{args = }')
 
     if args.clear is True:
         while True:
@@ -86,8 +87,12 @@ if __name__ == '__main__':
         operation.list_incubate_award()
 
     if args.update is True:
-        operation.list_all_projects()
-        update_id = eval(input('\n请输入要更新的项目id: '))
-        value_add = eval(input('请输入项目进度状态的新增数值: '))
-        operation.update_project_stat(update_id, value_add)
-        operation.list_all_projects()
+        projects_cnt = operation.list_all_projects()
+        if projects_cnt != 0:
+            update_id = eval(input('\n请输入要更新的项目id: '))
+            value_add = eval(input('请输入项目进度状态的新增数值: '))
+            operation.update_project_stat(update_id, value_add)
+            operation.list_all_projects()
+
+    if args.model is True:
+        operation.list_all_project_models()

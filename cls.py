@@ -76,7 +76,8 @@ class SelfDefinedFundProject(FundProject):
         self.value_target = value_target
         self.value_award = value_award
         self.cur_stat = cur_stat
-        self.complete_cnt = 0
+        self.complete_cnt = 0  # 项目累计完成轮数
+        self.last_update_time = '无'  # 上次更新项目进度的时间
 
 
 class TypicalGameHourFundProject(FundProject):
@@ -106,6 +107,13 @@ class TypicalGameHourFundProject(FundProject):
         self.value_award = value_award
         self.cur_stat = cur_stat
         self.complete_cnt = 0
+        self.last_update_time = '无'
+
+    def show_model_class(self):
+        print(f'\n游戏时长基金项目(示例项目类型)({self.__class__})属性信息如下: ')
+        print(f'{self.project_type=}\n{self.project_name=}\n{self.award=}\n{self.description=}\n'
+              f'{self.value_target=}\n{self.unit_target=}\n{self.value_award=}\n{self.unit_award=}\n'
+              f'{self.cur_stat=}\n{self.complete_cnt=}\n{self.last_update_time=}\n')
 
 
 class IncubateAward:
