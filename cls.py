@@ -82,6 +82,7 @@ class SelfDefinedFundProject(FundProject):
         self.value_award = value_award
         self.cur_stat = cur_stat
         self.complete_cnt = 0  # 项目累计完成轮数
+        self.init_time = '无'  # 项目创建时间
         self.last_update_time = '无'  # 上次更新项目进度的时间
 
 
@@ -112,6 +113,7 @@ class TypicalGameHourFundProject(FundProject):
         self.value_award = value_award
         self.cur_stat = cur_stat
         self.complete_cnt = 0
+        self.init_time = '无'
         self.last_update_time = '无'
 
     def show_model_class(self):

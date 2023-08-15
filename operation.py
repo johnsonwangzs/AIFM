@@ -119,10 +119,11 @@ def list_all_projects_detail() -> int:
         complete_cnt = project_object.complete_cnt
         s1 = f'{value_target}({unit_target}) => {value_award}({unit_award})'
         s2 = f'{cur_stat}/{value_target}'
+        init_time = project_object.init_time
         last_update = project_object.last_update_time
         table_output.append([project_id + 1, project_name, project_type,
-                             s1, s2, complete_cnt, last_update, description])
-    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度', '累计完成轮数', '最近修改进度时间', '项目描述']
+                             s1, s2, complete_cnt, init_time, last_update, description])
+    headers = ['项目id', '项目名称', '项目类型', '成就达成方式', '当前完成度', '累计完成轮数', '项目创建时间', '最近修改进度时间', '项目描述']
     print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
     return len(projects_list)
 
@@ -143,6 +144,7 @@ def build_new_project(project_type: str, project_name: str, **kwargs):
                                              cur_stat=kwargs['cur_stat'])
         new_project.award = kwargs['award']
         new_project.description = kwargs['description']
+    new_project.init_time = str(datetime.now())
 
     projects_list = _read_savefile_projects()
     projects_list.append(new_project)
