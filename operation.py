@@ -23,7 +23,10 @@ def clear_all_projects():
 
 
 def _read_savefile_projects() -> list:
-    """读取存档文件, 返回基金项目列表."""
+    """读取存档文件, 返回基金项目列表.
+
+    :return: 基金项目列表
+    """
     global projects_filepath
     with open(projects_filepath, 'rb') as f:
         projects_list = list()
@@ -35,7 +38,10 @@ def _read_savefile_projects() -> list:
 
 
 def _read_savefile_incubate() -> list:
-    """读取存储文件, 返回孵化中项目的预期奖励列表."""
+    """读取存储文件, 返回孵化中项目的预期奖励列表.
+
+    :return: 预期奖励列表
+    """
     global award_incubate_filepath
     with open(award_incubate_filepath, 'rb') as f:
         incubate_list = list()
@@ -47,7 +53,10 @@ def _read_savefile_incubate() -> list:
 
 
 def _read_savefile_repo() -> list:
-    """读取存储文件, 返回奖励仓库列表."""
+    """读取存储文件, 返回奖励仓库列表.
+
+    :return: 仓库列表
+    """
     global award_repo_filepath
     with open(award_repo_filepath, 'rb') as f:
         repo_list = list()
@@ -59,7 +68,10 @@ def _read_savefile_repo() -> list:
 
 
 def list_all_projects() -> int:
-    """列出所有基金项目."""
+    """列出所有基金项目.
+
+    :return: 基金项目列表的长度
+    """
     projects_list = _read_savefile_projects()
     if len(projects_list) == 0:
         print('\n暂无基金项目.\n提示: 使用参数[-b]来添加一个新的基金项目.')
@@ -85,7 +97,10 @@ def list_all_projects() -> int:
 
 
 def list_all_projects_detail() -> int:
-    """列出所有基金项目(详细信息)."""
+    """列出所有基金项目(详细信息).
+
+    :return: 基金项目列表的长度
+    """
     projects_list = _read_savefile_projects()
     if len(projects_list) == 0:
         print('\n暂无基金项目.\n提示: 使用参数[-b]来添加一个新的基金项目.')
@@ -159,6 +174,7 @@ def update_project_stat(project_id: int, value_add: float = 0.0) -> bool:
 
     :param project_id: 项目id.
     :param value_add: 状态的新增值.
+    :return: 取出操作是否成功
     """
     project_list = _read_savefile_projects()
     try:
@@ -199,6 +215,7 @@ def update_award_repo(award: str, value_award_add: float, unit_award: str, time_
     :param value_award_add: 奖励数值.
     :param unit_award: 奖励的单位.
     :param time_now: 仓库发生变动的时间.
+    :return: 取出操作是否成功
     """
     if value_award_add == 0.0:  # 若数值为0, 则不用更新
         return False
@@ -217,10 +234,12 @@ def update_award_repo(award: str, value_award_add: float, unit_award: str, time_
         new_repo.last_change_time = time_now
         repo_list.append(new_repo)
 
+    global award_repo_filepath
     with open(award_repo_filepath, 'wb') as f:
         pickle.dump(repo_list, f)
         print('> 已更新奖励仓库.')
     return True
+
 
 def _create_award_repo(award: str, unit_award: str) -> AwardRepository:
     """创建新的奖励仓库.
@@ -298,6 +317,7 @@ def clear_all_incubate_awards():
 
 
 def list_award_repo():
+    """列出所有奖励仓库."""
     repo_list = _read_savefile_repo()
     if len(repo_list) == 0:
         print('\n暂无已获得奖励.')
@@ -312,3 +332,58 @@ def list_award_repo():
         table_output.append([repo_id + 1, award, value_award, unit_award, last_change_time])
     headers = ['奖励id', '奖励名称', '当前仓库存量', '计量单位', '最近变动时间']
     print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
+
+
+def withdraw_award_in_repo(repo_id: int, value_withdraw: float) -> bool:
+    """从奖励仓库中取出指定数量的奖励.
+
+    :param repo_id: 仓库id.
+    :param value_withdraw: 要取出的奖励数量.
+    :return: 取出操作是否成功
+    """
+    repo_list = _read_savefile_repo()
+    try:
+        if value_withdraw > repo_list[repo_id - 1].value_award:
+            print('\n取出奖励失败. 原因: 库存数量不足.')
+            return False
+        if value_withdraw <= 0.0:
+            print('\n取出奖励失败. 原因: 取出数值应大于0.')
+            return False
+
+        repo_list[repo_id - 1].value_award -= value_withdraw
+        repo_list[repo_id - 1].last_change_time = str(datetime.now())
+
+        global award_repo_filepath
+        with open(award_repo_filepath, 'wb') as f:
+            pickle.dump(repo_list, f)
+            print('> 奖励已取出. 已更新奖励仓库.')
+        return True
+
+    except IndexError:
+        print('\n错误! 输入的仓库序号不存在.')
+    # except TypeError:
+        # print('\n错误! 非法输入.')
+    return False
+
+
+def delete_award_repo(repo_id: int):
+    """删除指定孵化中项目的预期奖励.
+
+    :param repo_id: 预期奖励的id
+    """
+    repo_list = _read_savefile_incubate()
+    try:
+        del repo_list[repo_id - 1]
+        global award_repo_filepath
+        with open(award_repo_filepath, 'wb') as f:
+            pickle.dump(repo_list, f)
+        print('> 奖励仓库已删除!')
+    except IndexError:
+        print('\n错误! 输入的奖励仓库序号不存在.')
+
+
+def clear_all_award_repo():
+    """清除所有奖励仓库(删除奖励仓库存储文件)."""
+    global award_repo_filepath
+    os.remove(award_repo_filepath)
+    print('> 已清除所有奖励仓库.')
