@@ -205,3 +205,27 @@ def list_incubate_award():
         table_output.append([incubate_id + 1, award, description, necessity_level])
     headers = ['奖励id', '奖励名称', '描述', '需求性等级']
     print(tabulate(table_output, headers=headers, stralign='center', tablefmt='grid'))
+
+
+def delete_incubate_award(award_id: int):
+    """删除指定孵化中项目的预期奖励.
+
+    :param award_id: 预期奖励的id
+    :return:
+    """
+    incubate_list = _read_savefile_incubate()
+    try:
+        del incubate_list[award_id - 1]
+        global incubate_filepath
+        with open(incubate_filepath, 'wb') as f:
+            pickle.dump(incubate_list, f)
+        print('> 预期奖励已删除!')
+    except IndexError:
+        print('\n错误! 输入的预期奖励序号不存在.')
+
+
+def clear_all_incubate_awards():
+    """删除所有孵化中项目的预期奖励."""
+    global incubate_filepath
+    os.remove(incubate_filepath)
+    print('> 已清除所有孵化中项目的预期奖励.')
